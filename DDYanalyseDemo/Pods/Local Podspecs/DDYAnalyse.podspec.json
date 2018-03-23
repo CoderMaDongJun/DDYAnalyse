@@ -1,0 +1,25 @@
+{
+  "name": "DDYAnalyse",
+  "version": "0.0.1",
+  "summary": "当当埋点SDK",
+  "description": "当当埋点SDK基于大当埋点规则去开发的，详见readme",
+  "license": "MIT",
+  "homepage": "http://10.255.223.213/ios-code/DDYAnalyse.git",
+  "authors": {
+    "马栋军": "madongjun@dangdang.com"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source": {
+    "git": "http://10.255.223.213/ios-code/DDYAnalyse.git",
+    "tag": "0.0.1"
+  },
+  "source_files": "DDYAnalyse/**/*.{h,m}",
+  "requires_arc": true,
+  "dependencies": {
+    "LKDBHelper": [
+      "2.4.7"
+    ]
+  }
+}
