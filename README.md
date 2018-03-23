@@ -41,7 +41,7 @@
     }
 ```
 ## 页面点击事件
-### attributes根据自己的埋点规则可自定义，也可为nil
+#### attributes根据自己的埋点规则可自定义，也可为nil
 ``` objc
     [DDYClick DDY_event:@"eventId_4002" attributes:@{DDY_pageIdKey:@"pageId_1003"
     ,DDY_pidKey:@"pid=2378"

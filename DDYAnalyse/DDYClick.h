@@ -15,10 +15,10 @@ typedef enum {
     DDYDefault = 1,          // 启动发送
     DDYSend_Interval = 2,    // 最小间隔发送
     DDYSend_Count = 3,       // 满10条发送
-} ReportPolicy;
+} DDY_ReportPolicy;
 
 /** 统计的场景类别 */
-typedef NS_ENUM (NSUInteger, eScenarioType)
+typedef NS_ENUM (NSUInteger, DDY_eScenarioType)
 {
     DDY_NORMAL = 0,    // default value
     DDY_OTHER = 1,      // 保留字段
@@ -54,9 +54,9 @@ extern NSString *_Nonnull const DDY_permanent_idKey;
 /** optional:  渠道id，default: "App Store"即537-50 */
 @property(nonatomic, copy,nullable) NSString *channelId;
 /** optional:  发送策略,default: DDYDefault */
-@property(nonatomic) ReportPolicy   ePolicy;
+@property(nonatomic) DDY_ReportPolicy   ePolicy;
 /** optional:  统计的场景类别,default: DDY_NORMAL */
-@property(nonatomic) eScenarioType  eSType;
+@property(nonatomic) DDY_eScenarioType  eSType;
 /** optional: idfa采集,default:YES,采集 */
 @property(nonatomic) BOOL needIdfa;
 
@@ -90,7 +90,7 @@ extern NSString *_Nonnull const DDY_permanent_idKey;
  */
 + (void)DDY_startWithConfigure:(nonnull DDYAnalyticsConfig *)config;
 
-/** 当reportPolicy == DDYSend_Interval 时设定log发送间隔
+/** 当DDY_ReportPolicy == DDYSend_Interval 时设定log发送间隔
     @param second 单位为秒,最小90秒,最大86400秒(24hour).
  */
 + (void)DDY_setLogSendInterval:(double)second;
