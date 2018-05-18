@@ -19,20 +19,26 @@
 #define DDYDeviceSystem [[UIDevice currentDevice] systemVersion]
 #define DDYXcodeAppVersion [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
 #define DDYXcodeAppBuild [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
+#define DDYXcodeAppBundleIdentifier [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+#define DDYSafePermanentId [[NSUserDefaults standardUserDefaults] objectForKey:@"permanentId"]?:@""
+#define DDYSafeDic(attributes,value) [attributes valueForKey:value]?:@""
+#define DDY_test // 调试使用
 
 // 常量
 NSString * const DDY_pageIdKey = @"DDY_page_IdKey";
+NSString * const DDY_prePageIdKey = @"DDY_prePageIdKey";
 NSString * const DDY_pidKey = @"DDY_pidKey";
+NSString * const DDY_prePidKey = @"DDY_prePidKey";
+NSString * const DDY_exposureTypeKey = @"DDY_exposureTypeKey";
 NSString * const DDY_linkurlKey = @"DDY_linkurlKey";
 NSString * const DDY_contentKey = @"DDY_contentKey";
 NSString * const DDY_expandKey = @"DDY_expandKey";
-NSString * const DDY_permanent_idKey = @"DDY_permanent_idKey";
 static NSString * const DDYAppKey = @"DDYAppKey";
 static NSString * const DDYAppSecret = @"DDYAppSecret";
 static double const DDY_minSecond = 90;
 static double const DDY_maxSecond = 86400;
-static NSInteger const DDY_sendCount = 10;
-static NSString * const DDY_serverUrl = @"http://10.4.27.111/eapp.php?debug=1";
+static NSInteger const DDY_sendCount = 1;
+static NSString * const DDY_serverUrl = @"http://databack.dangdang.com/eapp.php";
 static NSString * const DDY_AnalyseTableName = @"DDYAnalyse.db";
 
 /** 动作类型 */
@@ -48,6 +54,8 @@ typedef NS_ENUM (NSUInteger, DDYActionType)
 @interface DDYAnalyticsConfig()
 /** optional:  UDID,default:自动获取 */
 @property(nonatomic, copy,nullable) NSString *udId;
+/** optional:  custId,default:0 */
+@property(nonatomic, copy,nullable) NSString *custId;
 /** optional:  APP版本号,default:自动获取 */
 @property(nonatomic, copy,nullable) NSString *version;
 /** optional:  APP构建build号,default:自动获取 */
@@ -56,8 +64,6 @@ typedef NS_ENUM (NSUInteger, DDYActionType)
 @property(nonatomic, copy,nullable) NSString *deviceType;
 /** optional:  操作系统信息，default:自动获取 */
 @property(nonatomic, copy,nullable) NSString *osInfo;
-/** optional:  未登陆时给0,default:0 */
-@property(nonatomic, copy,nullable) NSString *custId;
 /** optional:  广告标识符,default:自动获取 */
 @property(nonatomic, copy,nullable) NSString *ddYIdfa;
 @end
@@ -77,7 +83,6 @@ static DDYAnalyticsConfig *_instanceConfig;
         _instanceConfig.channelId = @"537-50";
         _instanceConfig.ePolicy = DDYDefault;
         _instanceConfig.eSType = DDY_NORMAL;
-        
     });
     return _instanceConfig;
 }
@@ -299,14 +304,13 @@ static NSTimer *_timer = nil;
     }
 }
 
-static NSThread *_thread = nil;
 + (void)DDY_setLogSendInterval:(double)second
 {
 #if DEBUG
     NSAssert((second>=DDY_minSecond && second<=DDY_maxSecond), @"定时器时间设置有误，应在90~86400秒之内");
 #endif
     if (second < DDY_minSecond || second > DDY_maxSecond) return;
-
+    
     // 定时器设定，触发发送统计结果
     dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
     dispatch_async(queue, ^{
@@ -315,6 +319,11 @@ static NSThread *_thread = nil;
         [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
         [[NSRunLoop currentRunLoop] run];
     });
+}
++ (void)DDY_setCustId:(NSString *)custId
+{
+    DDYConfigInstance.custId = custId;
+    [DDYConfigInstance saveToDB];
 }
 
 #pragma mark -- 计时统计
@@ -351,16 +360,19 @@ static NSThread *_thread = nil;
     configure.startTime = [self DDY_stringTime:start];
     configure.page_id = pageId;
     configure.event_id = @"6002";
-    configure.duration = [NSString stringWithFormat:@"%zd",duration];
+    configure.duration = [NSString stringWithFormat:@"%@",[NSNumber numberWithInteger:duration]];
     configure.action_type = DDYActionTypeTime;
+    configure.permanent_id = DDYSafePermanentId;
+    
     if (attributes && attributes.count > 0) {
-        // permanent_id
-        NSString *permanent_id = attributes[DDY_permanent_idKey];
-        configure.permanent_id = permanent_id;
-        
         // pid
-        NSString *pid = attributes[DDY_pidKey];
-        configure.pid = pid;
+        configure.pid = DDYSafeDic(attributes, DDY_pidKey);
+        
+        // prePageid
+        configure.refer_pageid = DDYSafeDic(attributes, DDY_prePageIdKey);
+        
+        // prePid
+        configure.refer_detailPageid = DDYSafeDic(attributes, DDY_prePidKey);
     }
     [configure saveToDB];
 }
@@ -371,7 +383,7 @@ static NSThread *_thread = nil;
     [self DDY_event:eventId attributes:nil];
 }
 
- + (void)DDY_event:(nonnull NSString *)eventId attributes:(nullable NSDictionary *)attributes
++ (void)DDY_event:(nonnull NSString *)eventId attributes:(nullable NSDictionary *)attributes
 {
     if (DDYStrIsEmpty(eventId)) return;
     
@@ -379,32 +391,60 @@ static NSThread *_thread = nil;
     configure.startTime = [self DDY_stringTime:[NSDate date]];
     configure.event_id = eventId;
     configure.action_type = DDYActionTypeClick;
+    configure.permanent_id = DDYSafePermanentId;
     
     // 记录详细数据
     if (attributes && attributes.count > 0) {
         // pageId
-        NSString *page_id = attributes[DDY_pageIdKey];
-        configure.page_id = page_id;
+        configure.page_id = DDYSafeDic(attributes,DDY_pageIdKey);
         
         // pid
-        NSString *pid = attributes[DDY_pidKey];
-        configure.pid = pid;
+        configure.pid = DDYSafeDic(attributes,DDY_pidKey);
         
         // linkurl
-        NSString *linkurl = attributes[DDY_linkurlKey];
-        configure.linkurl = linkurl;
+        configure.linkurl = DDYSafeDic(attributes,DDY_linkurlKey);
         
         // content
-        NSString *content = attributes[DDY_contentKey];
-        configure.content = content;
+        configure.content = DDYSafeDic(attributes,DDY_contentKey);
         
         // expand
-        NSString *expand = attributes[DDY_expandKey];
-        configure.expand = expand;
+        configure.expand = DDYSafeDic(attributes,DDY_expandKey);
+    }
+    [configure saveToDB];
+}
+
++ (void)DDY_exposureFromPage:(NSString *)pageId
+{
+    [self DDY_exposureFromPage:pageId attributes:nil];
+}
+
++ (void)DDY_exposureFromPage:(nonnull NSString *)pageId attributes:(nullable NSDictionary *)attributes
+{
+    if (DDYStrIsEmpty(pageId)) return;
+    
+    DDYAnalyticsNodeConfigure *configure = [[DDYAnalyticsNodeConfigure alloc] init];
+    configure.startTime = [self DDY_stringTime:[NSDate date]];
+    configure.event_id = @"6000";
+    configure.action_type = DDYActionTypePV;// 默认是页面曝光
+    configure.permanent_id = DDYSafePermanentId;
+    configure.page_id = pageId;
+    
+    // 记录详细数据
+    if (attributes && attributes.count > 0) {
+        // pid
+        configure.pid = DDYSafeDic(attributes, DDY_pidKey);
         
-        // permanent_id
-        NSString *permanent_id = attributes[DDY_permanent_idKey];
-        configure.permanent_id = permanent_id;
+        // prePageid
+        configure.refer_pageid = DDYSafeDic(attributes, DDY_prePageIdKey);
+        
+        // prePid
+        configure.refer_detailPageid = DDYSafeDic(attributes, DDY_prePidKey);
+        
+        // actionType
+        if ([attributes.allKeys containsObject:DDY_exposureTypeKey]) {
+            NSInteger exposureType = [attributes[DDY_exposureTypeKey] integerValue];
+            configure.action_type = exposureType;
+        }
         
     }
     [configure saveToDB];
@@ -431,7 +471,9 @@ static NSThread *_thread = nil;
     DDYSendModel *model = [[DDYSendModel alloc] init];
     model.DDY_sendDatas = datas;
     model.rowids = [difResults valueForKeyPath:@"self.rowid"];
+    
     DDYLog(@"\n==rowids:%@ sendDatas== %@ \n",model.rowids,model.DDY_sendDatas);
+    
     return model;
 }
 
@@ -467,15 +509,15 @@ static NSThread *_thread = nil;
 {
     NSString *sql = [NSString stringWithFormat:@"rowid in %@",rowids];
     BOOL flag = [DDYAnalyticsNodeConfigure deleteWithWhere:sql];
-    DDYLog(@"\n数据删除结果,flag:%zd \n",flag);
+    DDYLog(@"\n数据删除结果,flag:%d \n",flag);
 }
 
 + (void)DDY_clearTableDataWithTableName:(nullable NSString *)tableName
 {
     // 删除所有的表
-//    LKDBHelper* globalHelper = [DDYAnalyticsNodeConfigure getUsingLKDBHelper];
-//    [globalHelper dropAllTable];
-
+    //    LKDBHelper* globalHelper = [DDYAnalyticsNodeConfigure getUsingLKDBHelper];
+    //    [globalHelper dropAllTable];
+    
     // 删除某个表内所有数据
     tableName = tableName?tableName:@"DDYAnalyticsNodeConfigure";
     [LKDBHelper clearTableData:NSClassFromString(tableName)];
@@ -492,13 +534,16 @@ static NSThread *_thread = nil;
     }
     
     [DDYNetworkAPI postData:model.DDY_sendDatas complete:^(BOOL success) {
+        
         if (success) {
-             __strong __typeof(weakSelf)strongSelf = weakSelf;
-            DDYLog(@"\n发送数据成功\n");
+            __strong __typeof(weakSelf)strongSelf = weakSelf;
+            
+#ifdef DDY_test
+            DDYLog(@"\n发送数据成功\n rowid:%@ \n data:%@\n",model.rowids[0],[model.DDY_sendDatas substringFromIndex:9]);
+#endif
             [strongSelf DDY_deleteWithRowids:model.rowids];
         }
     }];
 }
 
 @end
-

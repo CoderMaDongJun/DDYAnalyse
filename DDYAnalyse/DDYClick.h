@@ -4,11 +4,13 @@
 //
 //  Created by 马栋军 on 2018/3/14.
 //  Copyright © 2018年 DangDangWang. All rights reserved.
-//  此记录规则根据“大当文档”规则而来
+//  此记录规则根据“大当文档”规则而来.
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <LKDBHelper/LKDBHelper.h>
+#import "UIViewController+DDYAnalyse.h"
+#import "UINavigationController+DDYAnalyseNav.h"
 
 /** 发送策略 */
 typedef enum {
@@ -26,16 +28,20 @@ typedef NS_ENUM (NSUInteger, DDY_eScenarioType)
 
 /** 页面id常量 */
 extern NSString *_Nonnull const DDY_pageIdKey;
-/** 事件id常量 */
+/** 产品详细id常量 */
 extern NSString *_Nonnull const DDY_pidKey;
+/** 上一页面id常量 */
+extern NSString *_Nonnull const DDY_prePageIdKey;
+/** 上一页产品详细id常量 */
+extern NSString *_Nonnull const DDY_prePidKey;
 /** 去向页面标识常量 */
 extern NSString *_Nonnull const DDY_linkurlKey;
 /** 页面点击内容 */
 extern NSString *_Nonnull const DDY_contentKey;
 /** 扩展三级refer */
 extern NSString *_Nonnull const DDY_expandKey;
-/** 接口permanent_id */
-extern NSString *_Nonnull const DDY_permanent_idKey;
+/** 页面曝光类型 */
+extern NSString *_Nonnull const DDY_exposureTypeKey;
 
 #ifdef DEBUG
 # define DDYLog(...) NSLog(__VA_ARGS__)
@@ -57,7 +63,7 @@ extern NSString *_Nonnull const DDY_permanent_idKey;
 @property(nonatomic) DDY_ReportPolicy   ePolicy;
 /** optional:  统计的场景类别,default: DDY_NORMAL */
 @property(nonatomic) DDY_eScenarioType  eSType;
-/** optional: idfa采集,default:YES,采集 */
+/** optional: idfa采集,default:NO,不采集 */
 @property(nonatomic) BOOL needIdfa;
 
 /** 初始化调用该方法即可 */
@@ -72,53 +78,56 @@ extern NSString *_Nonnull const DDY_permanent_idKey;
 // @name  初始化统计
 //-------------------------------------------------
 /** 初始化"当当云"统计模块
-    @param config 实例类,具体参照该类成员的参数定义
-    在AppDelegate.m内 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions方法中添加以下任一策略的代码即可
-    示例代码 :
+ @param config 实例类,具体参照该类成员的参数定义
+ 在AppDelegate.m内 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions方法中添加以下任一策略的代码即可
+ 示例代码 :
  
-    1.DDYDefault
-        [DDYClick DDY_startWithConfigure:DDYConfigInstance];
+ 1.DDYDefault
+ [DDYClick DDY_startWithConfigure:DDYConfigInstance];
  
-    2.DDYSend_Interval
-        DDYConfigInstance.ePolicy = DDYSend_Interval;
-        [DDYClick DDY_setLogSendInterval:90];
-        [DDYClick DDY_startWithConfigure:DDYConfigInstance];
+ 2.DDYSend_Interval
+ DDYConfigInstance.ePolicy = DDYSend_Interval;
+ [DDYClick DDY_setLogSendInterval:90];
+ [DDYClick DDY_startWithConfigure:DDYConfigInstance];
  
-    3.DDYSend_Count
-        DDYConfigInstance.ePolicy = DDYSend_Count;
-        [DDYClick DDY_startWithConfigure:DDYConfigInstance];
+ 3.DDYSend_Count
+ DDYConfigInstance.ePolicy = DDYSend_Count;
+ [DDYClick DDY_startWithConfigure:DDYConfigInstance];
  */
 + (void)DDY_startWithConfigure:(nonnull DDYAnalyticsConfig *)config;
 
 /** 当DDY_ReportPolicy == DDYSend_Interval 时设定log发送间隔
-    @param second 单位为秒,最小90秒,最大86400秒(24hour).
+ @param second 单位为秒,最小90秒,最大86400秒(24hour).
  */
 + (void)DDY_setLogSendInterval:(double)second;
++ (void)DDY_setCustId:(nonnull NSString*)custId;
+
+/** 设置log打印日志，调试使用。记录一条，打印一条，删除一条 */
+//+ (void)DDY_setLogEnabled:(BOOL)enable;
 
 //------------------------------------------------------
 // @name  页面计时
 //------------------------------------------------------
 /** 自动页面时长统计, 开始记录某个页面展示时长.
-    使用方法：必须配对调用DDY_beginLogPageView:和DDY_endLogPageView:两个函数来完成自动统计，若只调用某一个函数不会生成有效数据。
-    在该页面展示时调用DDY_beginLogPageView:，当退出该页面时调用DDY_endLogPageView:
-    @param pageId 统计的页面名称或页面代码，如 DDYViewController或4201.
+ 使用方法：必须配对调用DDY_beginLogPageView:和DDY_endLogPageView:两个函数来完成自动统计，若只调用某一个函数不会生成有效数据。
+ 在该页面展示时调用DDY_beginLogPageView:，当退出该页面时调用DDY_endLogPageView:
+ @param pageId 统计的页面名称或页面代码，如 DDYViewController或4201.
  */
 + (void)DDY_beginLogPageView:(nonnull NSString *)pageId;
 
 /** 自动页面时长统计, 结束记录某个页面展示时长.
-    使用方法：必须配对调用DDY_beginLogPageView:和DDY_endLogPageView:两个函数来完成自动统计，若只调用某一个函数不会生成有效数据。
-    在该页面展示时调用DDY_beginLogPageView:，当退出该页面时调用DDY_endLogPageView:
-    @param pageId 统计的页面名称或页面代码，如 DDYViewController或4201.
+ 使用方法：必须配对调用DDY_beginLogPageView:和DDY_endLogPageView:两个函数来完成自动统计，若只调用某一个函数不会生成有效数据。
+ 在该页面展示时调用DDY_beginLogPageView:，当退出该页面时调用DDY_endLogPageView:
+ @param pageId 统计的页面名称或页面代码，如 DDYViewController或4201.
  */
 + (void)DDY_endLogPageView:(nonnull NSString *)pageId;
 
 /** 动统计页面时长，当需要记录页面标识时调用此方法。
-    @param pageId 页面id，如 DDYViewController或4201.
-    @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
-    示例代码:
-    [DDYClick DDY_endLogPageView:@"page_id_4000" attributes:@{DDY_pidKey:@"pid=0"
-    ,DDY_permanent_idKey:@"API_id"
-    }];
+ @param pageId 页面id，如 DDYViewController或4201.
+ @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
+ 示例代码:
+ [DDYClick DDY_endLogPageView:@"page_id_4000" attributes:@{DDY_pidKey:@"pid=0",...
+ }];
  */
 + (void)DDY_endLogPageView:(nonnull NSString *)pageId attributes:(nullable NSDictionary *)attributes;
 
@@ -134,22 +143,33 @@ extern NSString *_Nonnull const DDY_permanent_idKey;
  * @param eventId 相应的事件ID.
  * @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
  * 示例代码，最多只能传下面6个key
-    [DDYClick event:@"eventId_4002" attributes:@{
-     DDY_page_IdKey:@"pageId_1003"
-    ,DDY_pidKey:@"pid=2378"
-    ,DDY_linkurlKey:@"product://pid=40082"
-    ,DDY_contentKey:@"[floor=xxx#tab=xxx]"
-    ,DDY_expandKey:@"[(1002||||floor=B版主题馆1-1)(||||)(||||)]"
-    ,DDY_permanent_idKey:@"API_id"
-    }];
+ [DDYClick DDY_event:@"eventId_4002" attributes:@{
+ DDY_page_IdKey:@"pageId_1003"
+ ,DDY_pidKey:@"pid=2378"
+ ,DDY_linkurlKey:@"product://pid=40082"
+ ,DDY_contentKey:@"[floor=xxx#tab=xxx]"
+ ,DDY_expandKey:@"[(1002||||floor=B版主题馆1-1)(||||)(||||)]"
+ }];
  */
 + (void)DDY_event:(nonnull NSString *)eventId attributes:(nullable NSDictionary *)attributes;
 
-
+//-------------------------------------------------------
+// @name  曝光统计 exposure
+//-------------------------------------------------------
++ (void)DDY_exposureFromPage:(nonnull NSString *)pageId;
+/** 自定义事件,曝光统计.
+ * @param pageId 曝光的事件id.
+ * @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
+ * 示例代码，最多只能传下面1个key，页面曝光类型，传nil。模块曝光，传3
+ [DDYClick DDY_exposure:@"exposureId" attributes:@{
+    DDY_exposureTypeKey:3
+ }];
+ */
++ (void)DDY_exposureFromPage:(nonnull NSString *)pageId attributes:(nullable NSDictionary *)attributes;
 
 /********************* ↓↓↓ Temp Code ↓↓↓ *******************/
 /** 获取计时数据给服务端 ，暂时写此处 */
-+ (id)DDY_getBuryNodeFromSql;
++ (nonnull id)DDY_getBuryNodeFromSql;
 
 /** 删除记录数据 */
 + (void)DDY_deleteWithRowids:(nonnull NSArray *)rowids;
@@ -158,3 +178,5 @@ extern NSString *_Nonnull const DDY_permanent_idKey;
 + (void)DDY_clearTableDataWithTableName:(nullable NSString *)tableName;
 /********************* ↑↑↑ Temp Code ↑↑↑ *******************/
 @end
+
+
