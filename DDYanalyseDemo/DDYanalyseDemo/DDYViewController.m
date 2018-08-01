@@ -8,6 +8,8 @@
 
 #import "DDYViewController.h"
 #import "DDYClick.h"
+#import "DDYViewController1.h"
+//#import "UIControl+DDYAnalyse.h"
 
 @interface DDYViewController ()
 
@@ -63,14 +65,17 @@
 
 - (void)click:(UIButton *)sender
 {
+    NSLog(@"%s",__func__);
+//    sender.DDYLinkUrl = @"lingkurl";
+//    sender.DDYContent = @"content";
+//    sender.DDYExpand = @"expand";
     // 触发搜索动作
-    [DDYClick DDY_event:@"eventId_4002" attributes:@{DDY_pageIdKey:@"pageId_1003"
-                    ,DDY_pidKey:@"pid=2378"
-                    ,DDY_linkurlKey:@"product://pid=40082"
-                    ,DDY_contentKey:@"floor=xxx#tab=xxx"
-                    ,DDY_expandKey:@"(1002||||floor=B版主题馆1-1)(||||)(||||)"
-                    ,DDY_permanent_idKey:@"API_id"
-                                                 }];
+//    [DDYClick DDY_event:@"eventId_4002" attributes:@{DDY_pageIdKey:@"pageId_1003"
+//                    ,DDY_pidKey:@"pid=2378"
+//                    ,DDY_linkurlKey:@"product://pid=40082"
+//                    ,DDY_contentKey:@"floor=xxx#tab=xxx"
+//                    ,DDY_expandKey:@"(1002||||floor=B版主题馆1-1)(||||)(||||)"
+//                                                 }];
 }
 
 - (void)click1:(UIButton *)sender
@@ -92,24 +97,26 @@
 #if 1
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    [self presentViewController:[NSClassFromString(@"DDYViewController1") new] animated:YES completion:nil];
+//    [self presentViewController:[NSClassFromString(@"DDYViewController1") new] animated:YES completion:nil];
+    DDYViewController1 *vc = [[DDYViewController1 alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    [DDYClick DDY_beginLogPageView:@"page_id_4000"];
-    
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-    // 页面
-    [DDYClick DDY_endLogPageView:@"page_id_4000" attributes:@{DDY_pidKey:@"pid=0"
-                     ,DDY_permanent_idKey:@"API_id"
-                                                              }];
-}
+//- (void)viewWillAppear:(BOOL)animated
+//{
+//    [super viewWillAppear:animated];
+//    [DDYClick DDY_beginLogPageView:@"page_id_4000"];
+//    
+//}
+//
+//- (void)viewWillDisappear:(BOOL)animated
+//{
+//    [super viewWillDisappear:animated];
+//    // 页面
+//    [DDYClick DDY_endLogPageView:@"page_id_4000" attributes:@{DDY_pidKey:@"pid=0"
+//                     ,DDY_permanent_idKey:@"API_id"
+//                                                              }];
+//}
 
 #endif
 @end

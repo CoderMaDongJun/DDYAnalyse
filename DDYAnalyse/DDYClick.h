@@ -4,7 +4,7 @@
 //
 //  Created by 马栋军 on 2018/3/14.
 //  Copyright © 2018年 DangDangWang. All rights reserved.
-//  此记录规则根据“大当文档”规则而来.
+//
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -49,10 +49,12 @@ extern NSString *_Nonnull const DDY_exposureTypeKey;
 # define DDYLog(...)
 #endif
 
-/** @brief 统计的基础配置，数据库（DDYAppInfo）建立，表内字段特点是：不做频繁更改。因App不同，使用规则不同，根据自己业务规则，适当增、删DDYAppInfo属性，删除之前的运行App，再次运行即可。
+/** @brief 基础数据配置，数据库（DDYAppInfo）建立。因App不同，使用规则不同，根据自己业务规则，适当增、删DDYAppInfo属性，删除之前的运行App，再次运行即可。
  */
 #define DDYConfigInstance [DDYAnalyticsConfig sharedInstance]
 @interface DDYAnalyticsConfig : NSObject
+/** optional:  UDID */
+@property(nonatomic, copy,nullable) NSString *udId;
 /** optional:  appkey ,保留字段 */
 @property(nonatomic, copy,nullable) NSString *appKey;
 /** optional:  secret,保留字段 */
@@ -71,6 +73,21 @@ extern NSString *_Nonnull const DDY_exposureTypeKey;
 
 @end
 
+/**
+ *  @brief 附加数据配置
+ */
+#define DDYAdditionInstance [DDYAddition sharedAddition]
+@interface DDYAddition : NSObject
+/** optional，若需要，去该页面将属性赋值即可 */
+@property (nonatomic ,copy,nullable) NSString *DDYContent;
+/** optional，若需要，去该页面将属性赋值即可 */
+@property (nonatomic ,copy,nullable) NSString *DDYLinkUrl;
+/** optional，扩展保留属性，启用时直接赋值即可 */
+@property (nonatomic ,copy,nullable) NSString *DDY_expand;
+
++ (_Nonnull instancetype)sharedAddition;
+@end
+
 @interface DDYClick : NSObject
 
 #pragma mark basics
@@ -83,14 +100,17 @@ extern NSString *_Nonnull const DDY_exposureTypeKey;
  示例代码 :
  
  1.DDYDefault
+ DDYConfigInstance.udId = @"UDID";
  [DDYClick DDY_startWithConfigure:DDYConfigInstance];
  
  2.DDYSend_Interval
+ DDYConfigInstance.udId = @"UDID";
  DDYConfigInstance.ePolicy = DDYSend_Interval;
  [DDYClick DDY_setLogSendInterval:90];
  [DDYClick DDY_startWithConfigure:DDYConfigInstance];
  
  3.DDYSend_Count
+ DDYConfigInstance.udId = @"UDID";
  DDYConfigInstance.ePolicy = DDYSend_Count;
  [DDYClick DDY_startWithConfigure:DDYConfigInstance];
  */
@@ -102,31 +122,28 @@ extern NSString *_Nonnull const DDY_exposureTypeKey;
 + (void)DDY_setLogSendInterval:(double)second;
 + (void)DDY_setCustId:(nonnull NSString*)custId;
 
-/** 设置log打印日志，调试使用。记录一条，打印一条，删除一条 */
-//+ (void)DDY_setLogEnabled:(BOOL)enable;
-
 //------------------------------------------------------
 // @name  页面计时
 //------------------------------------------------------
 /** 自动页面时长统计, 开始记录某个页面展示时长.
  使用方法：必须配对调用DDY_beginLogPageView:和DDY_endLogPageView:两个函数来完成自动统计，若只调用某一个函数不会生成有效数据。
  在该页面展示时调用DDY_beginLogPageView:，当退出该页面时调用DDY_endLogPageView:
- @param pageId 统计的页面名称或页面代码，如 DDYViewController或4201.
+ @param pageId 页面唯一标识id.
  */
 + (void)DDY_beginLogPageView:(nonnull NSString *)pageId;
 
 /** 自动页面时长统计, 结束记录某个页面展示时长.
  使用方法：必须配对调用DDY_beginLogPageView:和DDY_endLogPageView:两个函数来完成自动统计，若只调用某一个函数不会生成有效数据。
  在该页面展示时调用DDY_beginLogPageView:，当退出该页面时调用DDY_endLogPageView:
- @param pageId 统计的页面名称或页面代码，如 DDYViewController或4201.
+ @param pageId 页面唯一标识id.
  */
 + (void)DDY_endLogPageView:(nonnull NSString *)pageId;
 
 /** 动统计页面时长，当需要记录页面标识时调用此方法。
- @param pageId 页面id，如 DDYViewController或4201.
- @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
+ @param pageId 页面唯一标识id
+ @param attributes 附加属性字典,目前仅支持3个key
  示例代码:
- [DDYClick DDY_endLogPageView:@"page_id_4000" attributes:@{DDY_pidKey:@"pid=0",...
+ [DDYClick DDY_endLogPageView:@"pageId" attributes:@{DDY_pidKey:@"pid",DDY_prePageIdKey:@"prePageId",DDY_prePidKey:@"prePid"
  }];
  */
 + (void)DDY_endLogPageView:(nonnull NSString *)pageId attributes:(nullable NSDictionary *)attributes;
@@ -141,14 +158,14 @@ extern NSString *_Nonnull const DDY_exposureTypeKey;
 
 /** 自定义事件,数量统计.
  * @param eventId 相应的事件ID.
- * @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
- * 示例代码，最多只能传下面6个key
+ * @param attributes 附加属性字典，目前仅支持5个key
+ * 示例代码
  [DDYClick DDY_event:@"eventId_4002" attributes:@{
- DDY_page_IdKey:@"pageId_1003"
- ,DDY_pidKey:@"pid=2378"
- ,DDY_linkurlKey:@"product://pid=40082"
- ,DDY_contentKey:@"[floor=xxx#tab=xxx]"
- ,DDY_expandKey:@"[(1002||||floor=B版主题馆1-1)(||||)(||||)]"
+ DDY_pageIdKey:@"pageId_1003",
+ DDY_pidKey:@"pid=2378",
+ DDY_linkurlKey:@"product://pid=40082",
+ DDY_contentKey:@"floor=xxx#tab=xxx",
+ DDY_expandKey:@"(1002||||floor=B版主题馆1-1)(||||)(||||)"
  }];
  */
 + (void)DDY_event:(nonnull NSString *)eventId attributes:(nullable NSDictionary *)attributes;
@@ -157,15 +174,22 @@ extern NSString *_Nonnull const DDY_exposureTypeKey;
 // @name  曝光统计 exposure
 //-------------------------------------------------------
 + (void)DDY_exposureFromPage:(nonnull NSString *)pageId;
+
 /** 自定义事件,曝光统计.
- * @param pageId 曝光的事件id.
- * @param attributes 附加属性，根据大当规则写入key:value.key参照以上常量，如DDY_pageId
- * 示例代码，最多只能传下面1个key，页面曝光类型，传nil。模块曝光，传3
+ * @param pageId 曝光的页面id.
+ * @param attributes 附加属性字典,目前仅支持4个key
+ * 示例代码
  [DDYClick DDY_exposure:@"exposureId" attributes:@{
-    DDY_exposureTypeKey:3
+ DDY_pidKey:@"pid",
+ DDY_prePageIdKey:@"pageId",
+ DDY_prePidKey:@"prePid",
+ DDY_exposureTypeKey:3 (页面曝光类型，传nil。模块曝光，传3)
  }];
  */
 + (void)DDY_exposureFromPage:(nonnull NSString *)pageId attributes:(nullable NSDictionary *)attributes;
+
+/** 发送数据接口*/
++ (void)DDY_sendDataToServer;
 
 /********************* ↓↓↓ Temp Code ↓↓↓ *******************/
 /** 获取计时数据给服务端 ，暂时写此处 */

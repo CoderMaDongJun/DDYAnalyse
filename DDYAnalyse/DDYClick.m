@@ -13,7 +13,6 @@
 #define DDYStrIsEmpty(str) ([str isKindOfClass:[NSNull class]] || str == nil || [str length]<1 ? YES : NO )
 #define DDYSpecialKey(pageName) ([NSString stringWithFormat:@"DDY_%@",pageName])
 #define DDYForamtNode(node) [NSString stringWithFormat:@"[%@]",node?node:@""]
-#define DDYDeviceUDID [[NSUUID UUID] UUIDString]
 #define DDYDeviceIDFA [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString]
 #define DDYDeviceType [[UIDevice currentDevice] model]
 #define DDYDeviceSystem [[UIDevice currentDevice] systemVersion]
@@ -22,7 +21,6 @@
 #define DDYXcodeAppBundleIdentifier [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
 #define DDYSafePermanentId [[NSUserDefaults standardUserDefaults] objectForKey:@"permanentId"]?:@""
 #define DDYSafeDic(attributes,value) [attributes valueForKey:value]?:@""
-#define DDY_test // 调试使用
 
 // 常量
 NSString * const DDY_pageIdKey = @"DDY_page_IdKey";
@@ -37,7 +35,7 @@ static NSString * const DDYAppKey = @"DDYAppKey";
 static NSString * const DDYAppSecret = @"DDYAppSecret";
 static double const DDY_minSecond = 90;
 static double const DDY_maxSecond = 86400;
-static NSInteger const DDY_sendCount = 1;
+static NSInteger const DDY_sendCount = 10;
 static NSString * const DDY_serverUrl = @"http://databack.dangdang.com/eapp.php";
 static NSString * const DDY_AnalyseTableName = @"DDYAnalyse.db";
 
@@ -52,8 +50,6 @@ typedef NS_ENUM (NSUInteger, DDYActionType)
 };
 
 @interface DDYAnalyticsConfig()
-/** optional:  UDID,default:自动获取 */
-@property(nonatomic, copy,nullable) NSString *udId;
 /** optional:  custId,default:0 */
 @property(nonatomic, copy,nullable) NSString *custId;
 /** optional:  APP版本号,default:自动获取 */
@@ -128,11 +124,6 @@ static DDYAnalyticsConfig *_instanceConfig;
 }
 @end
 
-
-@interface DDYClick()
-+ (void)DDY_sendDataToServer;
-@end
-
 /** @brief 统计的个性化定制，创建DDYAnalyticsConfig表，表内字段特点是：需要频繁更改。因App不同，使用规则不同，根据自己业务规则，适当增、删DDYAnalyticsConfig属性，删除之前的运行App，再次运行即可。
  */
 @interface DDYAnalyticsNodeConfigure : NSObject
@@ -181,7 +172,7 @@ static DDYAnalyticsConfig *_instanceConfig;
 {
     return nil;
 }
-
+static NSRecursiveLock*_DDYLock;
 + (LKDBHelper*)getUsingLKDBHelper
 {
     static LKDBHelper* db;
@@ -189,6 +180,7 @@ static DDYAnalyticsConfig *_instanceConfig;
     dispatch_once(&onceToken, ^{
         if (!db)
         {
+            _DDYLock = [[NSRecursiveLock alloc] init];
             NSArray *array = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
             NSString *path = [array.firstObject stringByAppendingPathComponent:@"DDYAnalyse"];
             path = [path stringByAppendingPathComponent:DDY_AnalyseTableName];
@@ -209,7 +201,9 @@ static DDYAnalyticsConfig *_instanceConfig;
 
 - (BOOL)saveToDB
 {
+    [_DDYLock lock];
     BOOL flag = [super saveToDB];
+    [_DDYLock unlock];
     // 检测是否满10条数据
     if (DDYConfigInstance.ePolicy == DDYSend_Count) {
         NSMutableArray<DDYAnalyticsNodeConfigure *> *difResults = [DDYAnalyticsNodeConfigure searchAllDatas];
@@ -222,6 +216,17 @@ static DDYAnalyticsConfig *_instanceConfig;
 }
 @end
 
+@implementation DDYAddition
+static DDYAddition *_instanceAddition;
++ (_Nonnull instancetype)sharedAddition
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _instanceAddition = [[[self class] alloc] init];
+    });
+    return _instanceAddition;
+}
+@end
 
 @interface DDYSendModel : NSObject
 /** 待发送的拼接数据*/
@@ -250,15 +255,20 @@ typedef void (^DDYResponseCallback)(BOOL success);
     
     // 创建请求 Task
     NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:requestM fromData:data completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        
-        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-        long status = [dic[@"status"] longValue];
-        if (status == 200) {
-            callback(YES);
-        }else if (status == 403){
-            DDYLog(@"\n 数据格式异常拒绝访问\n");
-        }else if (status == 404){
-            DDYLog(@"\n 未找到kafka相关配置\n");
+        if (error) {
+            NSString *msg = error.userInfo[@"NSLocalizedDescription"];
+            DDYLog(@"%s-%d:%@",__FILE__,__LINE__,msg);
+            callback(NO);
+        }else{
+            NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+            long status = [dic[@"status"] longValue];
+            if (status == 200) {
+                callback(YES);
+            }else if (status == 403){
+                DDYLog(@"\n 数据格式异常拒绝访问\n");
+            }else if (status == 404){
+                DDYLog(@"\n 未找到kafka相关配置\n");
+            }
         }
     }];
     [uploadTask resume];
@@ -287,7 +297,7 @@ static NSTimer *_timer = nil;
 + (void)DDY_startWithConfigure:(nonnull DDYAnalyticsConfig *)config
 {
     // 附加基础属性赋值
-    config.udId = DDYDeviceUDID;
+    config.udId = config.udId;
     config.version = DDYXcodeAppVersion;
     config.build = DDYXcodeAppBuild;
     config.deviceType = DDYDeviceType;
@@ -314,7 +324,7 @@ static NSTimer *_timer = nil;
     // 定时器设定，触发发送统计结果
     dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
     dispatch_async(queue, ^{
-        NSTimer *timer = [NSTimer timerWithTimeInterval:10 target:self selector:@selector(DDY_sendDataToServer) userInfo:nil repeats:YES];
+        NSTimer *timer = [NSTimer timerWithTimeInterval:second target:self selector:@selector(DDY_sendDataToServer) userInfo:nil repeats:YES];
         _timer = timer;
         [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
         [[NSRunLoop currentRunLoop] run];
@@ -465,6 +475,7 @@ static NSTimer *_timer = nil;
     [difResults enumerateObjectsUsingBlock:^(DDYAnalyticsNodeConfigure * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *data = [self DDY_takeDatasWithInfo:baseResults[0] configureation:obj];
         [datas appendString:data];
+        [datas appendString:@"\n"];
     }];
     
     // 最终要发送出去的数据
@@ -507,8 +518,10 @@ static NSTimer *_timer = nil;
 #pragma mark - 删除
 + (void)DDY_deleteWithRowids:(nonnull NSArray *)rowids
 {
+    [_DDYLock lock];
     NSString *sql = [NSString stringWithFormat:@"rowid in %@",rowids];
     BOOL flag = [DDYAnalyticsNodeConfigure deleteWithWhere:sql];
+    [_DDYLock unlock];
     DDYLog(@"\n数据删除结果,flag:%d \n",flag);
 }
 
@@ -527,7 +540,9 @@ static NSTimer *_timer = nil;
 + (void)DDY_sendDataToServer
 {
     __weak __typeof(self)weakSelf = self;
+    [_DDYLock lock];
     DDYSendModel *model = [DDYClick DDY_getBuryNodeFromSql];
+    [_DDYLock unlock];
     if (model.rowids.count == 0){
         DDYLog(@"\n一条数据也没有，暂停本次发送%@\n",[NSThread currentThread]);
         return;
@@ -538,9 +553,8 @@ static NSTimer *_timer = nil;
         if (success) {
             __strong __typeof(weakSelf)strongSelf = weakSelf;
             
-#ifdef DDY_test
             DDYLog(@"\n发送数据成功\n rowid:%@ \n data:%@\n",model.rowids[0],[model.DDY_sendDatas substringFromIndex:9]);
-#endif
+
             [strongSelf DDY_deleteWithRowids:model.rowids];
         }
     }];

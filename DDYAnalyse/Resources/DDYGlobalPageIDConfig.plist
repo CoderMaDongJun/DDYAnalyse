@@ -13,37 +13,24 @@
 			<key>EV</key>
 			<false/>
 		</dict>
-		<key>ControlEventIDs</key>
-		<dict>
-			<key>click:</key>
-			<string>999999</string>
-		</dict>
-	</dict>
-	<key>DDYViewController1</key>
-	<dict>
-		<key>PageIDs</key>
-		<dict>
-			<key>Enter</key>
-			<string>DDYViewController1_</string>
-			<key>Timer</key>
-			<false/>
-			<key>EV</key>
-			<false/>
-		</dict>
+		<key>EventIDs</key>
+		<string>9999999</string>
+		<key>name</key>
+		<string>测试页面</string>
 	</dict>
 	<key>CommunityViewController</key>
 	<dict>
 		<key>PageIDs</key>
 		<dict>
 			<key>Enter</key>
-			<string>1064</string>
+			<string>1004</string>
 			<key>Timer</key>
 			<false/>
 			<key>EV</key>
 			<true/>
 		</dict>
 		<key>EventIDs</key>
-		<string>8001064</string>
+		<string>8001004</string>
 		<key>name</key>
 		<string>导读</string>
 	</dict>
@@ -152,7 +139,7 @@
 			<key>Timer</key>
 			<false/>
 			<key>EV</key>
-			<false/>
+			<true/>
 		</dict>
 		<key>EventIDs</key>
 		<string>8001117</string>
@@ -356,6 +343,8 @@
 			<key>EV</key>
 			<true/>
 		</dict>
+		<key>EventIDs</key>
+		<string>8001065</string>
 		<key>name</key>
 		<string>个人中心详情页</string>
 	</dict>
@@ -660,6 +649,166 @@
 		<string>8001143</string>
 		<key>name</key>
 		<string>秒读计划</string>
+	</dict>
+	<key>ExchangeBookSquareController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1200</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001200</string>
+		<key>name</key>
+		<string>换书广场首页</string>
+	</dict>
+	<key>DDSearchBookResultController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1154</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001154</string>
+		<key>name</key>
+		<string>找一找搜索结果页</string>
+	</dict>
+	<key>DDCloudBuyBooksSlideController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1160</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001160</string>
+		<key>name</key>
+		<string>云书房</string>
+	</dict>
+	<key>ExchangeBookSelectingViewController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1162</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001162</string>
+		<key>name</key>
+		<string>请选择书籍</string>
+	</dict>
+	<key>ExchangeDetailController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1165</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001165</string>
+		<key>name</key>
+		<string>心愿详情</string>
+	</dict>
+	<key>WishListController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1172</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001172</string>
+		<key>name</key>
+		<string>心愿详情</string>
+	</dict>
+	<key>WriteWishController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1204</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001204</string>
+		<key>name</key>
+		<string>编写心愿</string>
+	</dict>
+	<key>ExchangeBookSquareDetailController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1177</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001177</string>
+		<key>name</key>
+		<string>书摊列表页</string>
+	</dict>
+	<key>LaunchExchangeController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1226</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001226</string>
+		<key>name</key>
+		<string>换书记录，我发起和参与，pid=7001226、7001227</string>
+	</dict>
+	<key>ExchangeBookSetUpBookstallViewController</key>
+	<dict>
+		<key>PageIDs</key>
+		<dict>
+			<key>Enter</key>
+			<string>1204</string>
+			<key>Timer</key>
+			<false/>
+			<key>EV</key>
+			<true/>
+		</dict>
+		<key>EventIDs</key>
+		<string>8001204</string>
+		<key>name</key>
+		<string>发书摊</string>
 	</dict>
 </dict>
 </plist>

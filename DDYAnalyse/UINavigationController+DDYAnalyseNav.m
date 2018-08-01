@@ -10,30 +10,21 @@
 #import "UIViewController+DDYAnalyse.h"
 #import "DDYClick.h"
 #import <objc/runtime.h>
-#import "DDRoute.h"
-@implementation NSObject (DDYAnalyse)
-#pragma mark - 属性
-- (void)setDDYLinkUrl:(NSString *)DDYLinkUrl
-{
-    objc_setAssociatedObject(self, @selector(DDYLinkUrl), DDYLinkUrl, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
 
-- (NSString *)DDYLinkUrl
-{
-    return objc_getAssociatedObject(self, _cmd);
-}
-
-- (void)setDDYContent:(NSString *)DDYContent
-{
-    objc_setAssociatedObject(self, @selector(DDYContent), DDYContent, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (NSString *)DDYContent
-{
-    return objc_getAssociatedObject(self, _cmd);
-}
+@interface UINavigationController(DDYAnalyseNav)
+@property (nonatomic, strong) NSDictionary *configurePlist;
 @end
 @implementation UINavigationController (DDYAnalyseNav)
+- (void)setConfigurePlist:(NSDictionary *)configurePlist
+{
+    objc_setAssociatedObject(self, @selector(configurePlist), configurePlist, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (NSDictionary *)configurePlist
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -98,23 +89,28 @@
     if (vc.DDYPrePid) {
         [attr setValue:vc.DDYPrePid forKey:DDY_prePidKey];
     }
+    
     // 该属性在控制器内部赋值
-    if (self.DDYContent) {
-        [attr setValue:self.DDYContent forKey:DDY_contentKey];
-        self.DDYContent = nil;
-    }else if ([DDRoute route].DDYContent){
-        [attr setValue:[DDRoute route].DDYContent forKey:DDY_contentKey];
-        [DDRoute route].DDYContent = nil;
+    NSString *clickContent = DDYAdditionInstance.DDYContent;
+    if (clickContent) {
+        [attr setValue:clickContent forKey:DDY_contentKey];
+        DDYAdditionInstance.DDYContent = nil;
     }
+    
     // 该属性在控制器内部赋值
-    if (self.DDYLinkUrl) {
-        [attr setValue:self.DDYLinkUrl forKey:DDY_linkurlKey];
-        self.DDYLinkUrl = nil;
-    }else if([DDRoute route].DDYLinkUrl){
-        [attr setValue:self.DDYLinkUrl forKey:DDY_linkurlKey];
-        [DDRoute route].DDYLinkUrl = nil;
+    NSString *DDYLinkUrl = DDYAdditionInstance.DDYLinkUrl;
+    if (DDYLinkUrl) {
+        [attr setValue:DDYLinkUrl forKey:DDY_linkurlKey];
+        DDYAdditionInstance.DDYLinkUrl = nil;
     }else{
         [attr setValue:[NSString stringWithFormat:@"code://page_id:%@",vc.DDYPageId] forKey:DDY_linkurlKey];
+    }
+    
+    // 该属性在控制器内部赋值
+    NSString *DDYExpand = DDYAdditionInstance.DDY_expand;
+    if (DDYExpand) {
+        [attr setValue:DDYExpand forKey:DDY_linkurlKey];
+        DDYAdditionInstance.DDY_expand = nil;
     }
     return attr;
 }
@@ -149,9 +145,11 @@
 
 - (NSDictionary *)DDY_dictionaryFromUserStatisticsConfigPlist
 {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"DDYGlobalPageIDConfig" ofType:@"plist"];
-    NSDictionary *dic = [NSDictionary dictionaryWithContentsOfFile:filePath];
-    return dic;
+    if (!self.configurePlist) {
+        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"DDYGlobalPageIDConfig" ofType:@"plist"];
+        self.configurePlist = [NSDictionary dictionaryWithContentsOfFile:filePath];
+    }
+    return self.configurePlist;
 }
 
 

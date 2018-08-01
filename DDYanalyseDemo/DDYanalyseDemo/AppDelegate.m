@@ -23,8 +23,9 @@
     [DDYClick DDY_startWithConfigure:DDYConfigInstance];
     
     ViewController *vc = [[ViewController alloc] init];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.rootViewController = vc;
+    self.window.rootViewController = nav;
     [self.window makeKeyAndVisible];
     return YES;
 }

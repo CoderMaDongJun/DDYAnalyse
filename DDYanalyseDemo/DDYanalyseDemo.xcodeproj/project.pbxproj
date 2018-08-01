@@ -132,6 +132,8 @@
 				480D81A52064DA4A008A3287 /* DDYanalyseDemo.entitlements */,
 				480D81642064A574008A3287 /* AppDelegate.h */,
 				480D81652064A574008A3287 /* AppDelegate.m */,
+				480D81992064A9C4008A3287 /* ViewController.h */,
+				480D819B2064A9C4008A3287 /* ViewController.m */,
 				480D81A22064D811008A3287 /* UIViewController+DDYViewController.h */,
 				480D81A32064D811008A3287 /* UIViewController+DDYViewController.m */,
 				480D81972064A9C4008A3287 /* DDYViewController.h */,
@@ -140,8 +142,6 @@
 				480D819D2064A9C5008A3287 /* DDYViewController1.m */,
 				480D819C2064A9C5008A3287 /* DDYViewController2.h */,
 				480D81982064A9C4008A3287 /* DDYViewController2.m */,
-				480D81992064A9C4008A3287 /* ViewController.h */,
-				480D819B2064A9C4008A3287 /* ViewController.m */,
 				480D816A2064A574008A3287 /* Main.storyboard */,
 				480D816D2064A574008A3287 /* Assets.xcassets */,
 				480D816F2064A574008A3287 /* LaunchScreen.storyboard */,
@@ -243,6 +243,7 @@
 		480D81592064A574008A3287 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				CLASSPREFIX = DDY_;
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "马栋军";
 				TargetAttributes = {
@@ -336,9 +337,12 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-DDYanalyseDemo/Pods-DDYanalyseDemo-resources.sh",
+				"${PODS_ROOT}/../../DDYAnalyse/Resources/DDYGlobalPageIDConfig.plist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -541,12 +545,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DDYanalyseDemo/DDYanalyseDemo.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZTW9XPA927;
 				INFOPLIST_FILE = DDYanalyseDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = DangDangWang.DDYanalyseDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -557,12 +563,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DDYanalyseDemo/DDYanalyseDemo.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZTW9XPA927;
 				INFOPLIST_FILE = DDYanalyseDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = DangDangWang.DDYanalyseDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

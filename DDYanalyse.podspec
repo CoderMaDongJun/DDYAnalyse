@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "DDYAnalyse"
-  s.version      = "0.0.1"
+  s.version      = "0.0.8"
   s.summary      = "当当埋点SDK"
 
  
@@ -18,8 +18,9 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "http://10.255.223.213/ios-code/DDYAnalyse.git", :tag =>"#{s.version }"}
 
-  s.source_files  = "DDYAnalyse/**/*.{h,m}"
-
+  s.source_files  = "DDYAnalyse/**/*.{h,m,md}"
+  s.resources =  "DDYAnalyse/**/*.plist"
+   
   s.requires_arc = true
 
   s.dependency 'LKDBHelper', '2.4.7'

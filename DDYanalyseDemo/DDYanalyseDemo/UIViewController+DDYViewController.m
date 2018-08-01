@@ -43,10 +43,7 @@
              NSStringFromClass(self),
              NSStringFromSelector(overrideSelector) );
     
-    if (originalMethod == overrideMethod)
-    {
-        return;
-    }
+    if (originalMethod == overrideMethod) return;
     
     class_addMethod( self,
                     originalSelector,
@@ -59,6 +56,6 @@
     
     method_exchangeImplementations( class_getInstanceMethod(self, originalSelector),
                                    class_getInstanceMethod(self, overrideSelector) );
-} /* swizzleInstanceMethod */
+} 
 
 @end

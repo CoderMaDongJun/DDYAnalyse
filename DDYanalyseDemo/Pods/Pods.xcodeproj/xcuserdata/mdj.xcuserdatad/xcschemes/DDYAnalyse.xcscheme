@@ -14,7 +14,7 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "48498D0B7E443D125718605A2AF8AE6F"
+               BlueprintIdentifier = "D4C472A87271FBE91EAA2A711BAF6146"
                BlueprintName = "DDYAnalyse"
                ReferencedContainer = "container:Pods.xcodeproj"
                BuildableName = "libDDYAnalyse.a">

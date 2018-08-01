@@ -9,6 +9,8 @@
 #import "ViewController.h"
 #import "DDYViewController.h"
 #import "DDYClick.h"
+#import "UIViewController+DDYAnalyse.h"
+
 
 @interface ViewController ()
 
@@ -21,12 +23,14 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor grayColor];
     
+    
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     DDYViewController *vc = [[DDYViewController alloc] init];
-    [self presentViewController:vc animated:YES completion:nil];
+//    [self presentViewController:vc animated:YES completion:nil];
+    [self.navigationController pushViewController:vc animated:YES];
     
 }
 

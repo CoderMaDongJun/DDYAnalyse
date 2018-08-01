@@ -26,21 +26,21 @@
     [DDYClick DDY_getBuryNodeFromSql];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    [DDYClick DDY_beginLogPageView:@"page_id_4002"];
-    
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-    // 页面
-    [DDYClick DDY_endLogPageView:@"page_id_4002" attributes:@{DDY_pidKey:@"pid=2"
-                    ,DDY_permanent_idKey:@"API_id"
-                                                              }];
-    
-}
+//- (void)viewWillAppear:(BOOL)animated
+//{
+//    [super viewWillAppear:animated];
+//    [DDYClick DDY_beginLogPageView:@"page_id_4002"];
+//
+//}
+//
+//- (void)viewWillDisappear:(BOOL)animated
+//{
+//    [super viewWillDisappear:animated];
+//    // 页面
+//    [DDYClick DDY_endLogPageView:@"page_id_4002" attributes:@{DDY_pidKey:@"pid=2"
+//                    ,DDY_permanent_idKey:@"API_id"
+//                                                              }];
+//
+//}
 
 @end
